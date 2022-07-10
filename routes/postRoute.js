@@ -7,7 +7,9 @@ const {
   deletePost,
 } = require("../controllers/postController");
 
-router.route("/").get(getPosts).post(createPost);
-router.route("/:id").put(updatePost).delete(deletePost);
+const protect = require("../middleware/authMiddleware");
+
+router.route("/").get(protect, getPosts).post(protect, createPost);
+router.route("/:id").put(protect, updatePost).delete(protect, deletePost);
 
 module.exports = router;
