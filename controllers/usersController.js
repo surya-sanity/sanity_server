@@ -59,6 +59,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   const user = await Users.findById(id);
 
   if (!user) {
+    res.statusCode(400);
     throw new Error(`User with id = ${id} not found`);
   }
 
