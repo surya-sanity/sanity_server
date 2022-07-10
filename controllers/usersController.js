@@ -1,11 +1,14 @@
 const asyncHandler = require("express-async-handler");
+const Users = require("../models/userModel");
 
 // @desc Get users
 // @route  GET /api/users
 // @access private
 
 const getUsers = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "get Success" });
+  const users = await Users.find();
+
+  res.status(200).send(users);
 });
 
 // @desc Create a user
@@ -13,11 +16,12 @@ const getUsers = asyncHandler(async (req, res) => {
 // @access private
 
 const createUser = asyncHandler(async (req, res) => {
-  if (!req.body.name) {
-    throw new Error("Name is required");
-  } else {
-    res.status(200).json({ success: `successs -->${req.body.name}` });
+  if (!req.body) {
+    res.statusCode(400);
+    throw new Error("User cannot be empty");
   }
+  const user = await Users.create(req.body);
+  res.status(200).json(user);
 });
 
 // @desc Update a user
@@ -25,7 +29,24 @@ const createUser = asyncHandler(async (req, res) => {
 // @access private
 
 const updateUser = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: `Update user Success ${req.params.id}` });
+  const { id } = req.params;
+  const user = await Users.findById(id);
+
+  if (!id || !req.body) {
+    res.statusCode(400);
+    throw new Error("id and updated user is required to update user");
+  }
+
+  if (!user) {
+    res.statusCode(400);
+    throw new Error(`User with id = ${id} not found`);
+  }
+
+  const updatedUser = await Users.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
+
+  res.status(200).json(updatedUser);
 });
 
 // @desc Delete a user
@@ -33,7 +54,17 @@ const updateUser = asyncHandler(async (req, res) => {
 // @access private
 
 const deleteUser = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: `Delete user Success ${req.params.id}` });
+  const { id } = req.params;
+
+  const user = await Users.findById(id);
+
+  if (!user) {
+    throw new Error(`User with id = ${id} not found`);
+  }
+
+  user.remove();
+
+  res.status(200).json({ id });
 });
 
 module.exports = {
